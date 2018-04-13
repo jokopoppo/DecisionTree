@@ -1,5 +1,5 @@
 import math
-
+import operator
 def readExel(exelname):
     import xlrd
 
@@ -37,27 +37,28 @@ def I(n):
     return info
 data = readExel('data.xls')
 
-min = list(map(min, zip(*data)))
-max = list(map(max, zip(*data)))
+minn = list(map(min, zip(*data)))
+maxx = list(map(max, zip(*data)))
 
-print(max)
-print(min)
+print(maxx)
+print(minn)
 
 ans = []
 for i in data:
-    ans.append(int(i.pop(i.__len__() - 1)))
+    ans.append(int(i[(i.__len__() - 1)]))
 
 infoE = I([ans.count(0),ans.count(1)])
 
 sd=[]
-for i in range(max.__len__()):
-    tmp=(max[i]-min[i])/3
+for i in range(maxx.__len__()):
+    tmp= (maxx[i] - minn[i]) / 3
     sd.append(tmp)
 print(sd)
 
 infoN=[]
 # sum(i > 0 for i in tmp)
-for i in range(data[0].__len__()):
+pnall=[]
+for i in range(data[0].__len__()-1):
     tmp = []
     for j in range(data.__len__()):
         tmp.append(data[j][i])
@@ -65,17 +66,18 @@ for i in range(data[0].__len__()):
     pn=[[0,0],[0,0],[0,0]]
     for j in range(tmp.__len__()):
         for k in range(pn.__len__()):
-            if((min[i]+(k*sd[i]))<=tmp[j]<(min[i]+(k+1)*sd[i])):
+            if((minn[i] + (k * sd[i]))<=tmp[j]<(minn[i] + (k + 1) * sd[i])):
                 if(ans[j]==1):
                     pn[k][0]+=1
                 elif(ans[j]==0):
                     pn[k][1]+=1
-        if(tmp[j]==max[i]):
+        if(tmp[j]==maxx[i]):
             if(ans[j]==1):
                 pn[k][0]+=1
             elif(ans[j]==0):
                 pn[k][1]+=1
-    # print(pn)
+    print(pn)
+    pnall.append(pn)
     # print(i,sum(pn[0])+sum(pn[1])+sum(pn[2]))
     #
     # break
@@ -89,3 +91,10 @@ for i in range(data[0].__len__()):
 print(infoE)
 print(infoN)
 
+gain=[]
+for i in infoN:
+    gain.append(infoE-i)
+
+index, value = max(enumerate(gain), key=operator.itemgetter(1))
+print(index,value)
+print(pnall[index])
