@@ -3,13 +3,16 @@ class Node:
 
     def __init__(self,attr,min,sd,pn=[]):
 
-        self.value=[min+sd,min+2*sd,min+3*sd]
+
         self.attr=attr
         self.child=[]
         self.sd=sd
         self.minn=min
         self.choice=[]
         self.pn=pn
+        self.value=[]
+        for i in range(self.pn.__len__()):
+            self.value.append(min+((i+1)*sd))
 
     def __str__(self, level=0):
         ret = "\t"*level+repr(self.attr)+":"+repr(self.choice)+"\n"

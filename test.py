@@ -1,6 +1,4 @@
-a=[1,1,1,1,1,1,1,1]
-print(a.__len__())
-
-for i in range(a.__len__()):
+for i in range(10):
+    if i==5:
+        continue
     print(i)
-    a.pop(i)
