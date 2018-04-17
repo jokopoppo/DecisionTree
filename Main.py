@@ -179,10 +179,14 @@ for i in tree:
     if i:
         print()
 
+tree[0][0]
+str(tree[0][0])
+print(tree[0][0])
+
 for layer in tree:
     for node in layer:
         node.filloutput()
-        print(node.child)
+
 
 tree[0][0]
 str(tree[0][0])
