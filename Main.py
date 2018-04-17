@@ -41,13 +41,10 @@ def createAnode(n,data,layer,header,node,parent):
     print(header.__len__(),header)
     if not data :
         return
-    print(data[0].__len__())
+    # print(data[0].__len__())
 
     minn = list(map(min, zip(*data)))
     maxx = list(map(max, zip(*data)))
-
-    # print(maxx)
-    # print(minn)
 
     ans = []
     for i in data:
@@ -59,10 +56,10 @@ def createAnode(n,data,layer,header,node,parent):
     for i in range(maxx.__len__()):
         tmp= (maxx[i] - minn[i]) / n
         sd.append(tmp)
-    # print(sd)
+
 
     infoN=[]
-    # sum(i > 0 for i in tmp)
+
     pnall=[]
 
 
@@ -86,11 +83,9 @@ def createAnode(n,data,layer,header,node,parent):
                     pn[k][0]+=1
                 elif(ans[j]==0):
                     pn[k][1]+=1
-        # print(pn)
+
         pnall.append(pn)
-        # print(i,sum(pn[0])+sum(pn[1])+sum(pn[2]))
-        #
-        # break
+
         attr=0
         for j in range(pn.__len__()):
 
@@ -98,32 +93,25 @@ def createAnode(n,data,layer,header,node,parent):
                 attr+= ((pn[j][0]+pn[j][1])/data.__len__())*I(pn[j])
         infoN.append(attr)
 
-    # print("Info Expected",infoE)
-    # print("Info each",infoN)
-
     gain=[]
     for i in infoN:
         gain.append(infoE-i)
 
     index, value = max(enumerate(gain), key=operator.itemgetter(1))
-    print("index",index)
-    print("HEAD",header[index])
-    print(pnall[index])
+    # print("index",index)
+    # print("HEAD",header[index])
+    # print(pnall[index])
 
     tree.append([])
     tree[layer].append(Node(header.pop(index),minn[index],sd[index],pnall[index]))
-    # print(layer,node,"Test tree",tree[layer])
+
     if(parent!=None):
         parent.add_child(tree[layer][tree[layer].__len__()-1])
-    # if(layer>0):
-    #     for node in range(tree[layer].__len__()):
-    #         tree[layer-1][0].add_child(tree[layer][node])
 
     datac=[]
 
     for i in range(n):
         datac.append([])
-        # print(datac.__len__())
 
         if(i<n-1):
             datac[i] = [v for v in data if tree[layer][node].minn+(i)*tree[layer][node].sd<=v[index] < tree[layer][node].minn+(i+1)*tree[layer][node].sd ]
@@ -146,100 +134,98 @@ def createAnode(n,data,layer,header,node,parent):
             if(type(tree[layer-1][tree[layer-1].__len__()-1].choice[i]) is int):
                 createAnode(n,datac[i],layer,header,i,tree[layer-1][tree[layer-1].__len__()-1])
 
-            # for j in range(datac.__len__()):
-            #     if(j==i):
-            #         break
-            #     for k in range(datac[j].__len__()):
-            #         datac[j][k].pop(index)
-
-
-
-    # for i in range(pnall.__len__()):
-    #     if pnall[i][0] and pnall[i][1] != 0 :
-    #         createAnode(datac[i],layer,header,i)
-    #         if(i<datac.__len__()-1):
-    #             for j in range(datac[i+1].__len__()):
-    #                 datac[i+1][j].pop(index)
     return index
 
 data = readExel('data.xls')
-tree = []
-header=[]
-for i in range(data[0].__len__()-1):
-    header.append(i)
-print(data[0].__len__()-1)
 
-percent=int(data.__len__()*70/100)
+percent=int(data.__len__()*10/100)
 random.shuffle(data)
-datatrain=data[:percent]
-datatest=data[percent:]
-print(datatrain.__len__(),datatest.__len__())
 
-createAnode(3,datatrain,0,header,0,None)
+dat=[]
 
-print(tree)
+for i in range(10):
+    dat.append(data[i*percent:(i+1)*percent])
 
-tree[0][0]
-str(tree[0][0])
-print(tree[0][0])
+forest=[]
+acc=[]
+for box in range(dat.__len__()):
+    tree = []
+    header=[]
+    for i in range(data[0].__len__()-1):
+        header.append(i)
+    # print(data[0].__len__()-1)
 
-for layer in tree:
-    for node in layer:
-        node.filloutput()
+    datatrain=[]
+    datatest=dat[box]
+
+    for i in range(dat.__len__()):
+        if(i!=box):
+            datatrain+=dat[i]
+
+    random.shuffle(datatrain)
+
+    createAnode(2,datatrain,0,header,0,None)
+
+    # print(tree)
+
+    for layer in tree:
+        for node in layer:
+            node.filloutput()
 
 
-for layer in range(tree.__len__()-1,-1,-1):
-    if(not tree[layer]):
-        tree.pop(layer)
-    else:
-        for i in range(tree[layer].__len__()-1,-1,-1):
-            if(tree[layer][i]==None):
-                tree[layer].pop(i)
+    for layer in range(tree.__len__()-1,-1,-1):
+        if(not tree[layer]):
+            tree.pop(layer)
+        else:
+            for i in range(tree[layer].__len__()-1,-1,-1):
+                if(tree[layer][i]==None):
+                    tree[layer].pop(i)
 
-tree[0][0]
-str(tree[0][0])
-print(tree[0][0])
+    tree[0][0]
+    str(tree[0][0])
+    print(tree[0][0])
 
-root = tree[0][0]
-c=0
-n=0
+    root = tree[0][0]
+    c=0
+    n=0
 
-for i in datatest:
-    root=tree[0][0]
-    n+=1
-    for layer in range(tree.__len__()):
-        # print("layer",layer)
-        for j in range(root.value.__len__()):
-            if(j<root.value.__len__()-1):
-                if root.value[j]-root.sd<=i[root.attr]<root.value[j]:
-                    if(root.child[j] != None):
-                        root=root.child[j]
-                    else:
-                        # print(i[i.__len__()-1],root.choice[j])
-                        if(i[i.__len__()-1] == 0 and root.choice[j] == False):
-                            c+=1
-                        elif(i[i.__len__()-1] == 1 and root.choice[j] == True):
-                            c+=1
-                    layer=tree.__len__()
-                    break
-            else:
-                if root.value[j]-root.sd<=i[root.attr]<=root.value[j]:
-                    if(root.child[j] != None):
-                        root=root.child[j]
-                    else:
-                        # print(i[i.__len__()-1],root.choice[j])
-                        if(i[i.__len__()-1] == 0 and root.choice[j] == False):
-                            c+=1
-                        elif(i[i.__len__()-1] == 1 and root.choice[j] == True):
-                            c+=1
-                    layer=tree.__len__()
-                    break
-print(n,c)
-print(header)
-# for i in tree :
-#     for j in i:
-#         if(j.attr==18):
-#             print(j.attr,end=":")
-#             for k in range(j.child.__len__()):
-#                 if(j.child[k] != None):
-#                     print(k,j.child[k].attr,end=" ")
+    for i in datatest:
+        root=tree[0][0]
+        n+=1
+        for layer in range(tree.__len__()):
+            # print("layer",layer)
+            for j in range(root.value.__len__()):
+                if(j<root.value.__len__()-1):
+                    if root.value[j]-root.sd<=i[root.attr]<root.value[j]:
+                        if(root.child[j] != None):
+                            root=root.child[j]
+                        else:
+                            # print(i[i.__len__()-1],root.choice[j])
+                            if(i[i.__len__()-1] == 0 and root.choice[j] == False):
+                                c+=1
+                            elif(i[i.__len__()-1] == 1 and root.choice[j] == True):
+                                c+=1
+                        layer=tree.__len__()
+                        break
+                else:
+                    if root.value[j]-root.sd<=i[root.attr]<=root.value[j]:
+                        if(root.child[j] != None):
+                            root=root.child[j]
+                        else:
+                            # print(i[i.__len__()-1],root.choice[j])
+                            if(i[i.__len__()-1] == 0 and root.choice[j] == False):
+                                c+=1
+                            elif(i[i.__len__()-1] == 1 and root.choice[j] == True):
+                                c+=1
+                        layer=tree.__len__()
+                        break
+    print(n,c)
+    print(header)
+    acc.append(c)
+    forest.append(tree)
+print(acc)
+accurancy=((sum(acc)/acc.__len__())/datatest.__len__())*100
+index, value = max(enumerate(acc), key=operator.itemgetter(1))
+print("Tree",index,", Acc :",(value/datatest.__len__())*100,"%")
+print("Accurancy = ",accurancy)
+print(forest[index][0][0])
