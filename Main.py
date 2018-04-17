@@ -1,5 +1,6 @@
 import math
 import operator
+import random
 from Node import *
 def readExel(exelname):
     import xlrd
@@ -35,7 +36,8 @@ def I(n):
         info-=pi*math.log(pi,2)
 
     return info
-def createAnode(data,layer,header,node,parent):
+def createAnode(n,data,layer,header,node,parent):
+
     print(header.__len__(),header)
     if not data :
         return
@@ -55,7 +57,7 @@ def createAnode(data,layer,header,node,parent):
 
     sd=[]
     for i in range(maxx.__len__()):
-        tmp= (maxx[i] - minn[i]) / 3
+        tmp= (maxx[i] - minn[i]) / n
         sd.append(tmp)
     # print(sd)
 
@@ -69,7 +71,9 @@ def createAnode(data,layer,header,node,parent):
         for j in range(data.__len__()):
             tmp.append(data[j][i])
 
-        pn=[[0,0],[0,0],[0,0]]
+        pn=[]
+        for j in range(n):
+            pn.append([0,0])
         for j in range(tmp.__len__()):
             for k in range(pn.__len__()):
                 if((minn[i] + (k * sd[i]))<=tmp[j]<(minn[i] + (k + 1) * sd[i])):
@@ -108,6 +112,7 @@ def createAnode(data,layer,header,node,parent):
 
     tree.append([])
     tree[layer].append(Node(header.pop(index),minn[index],sd[index],pnall[index]))
+    # print(layer,node,"Test tree",tree[layer])
     if(parent!=None):
         parent.add_child(tree[layer][tree[layer].__len__()-1])
     # if(layer>0):
@@ -115,9 +120,12 @@ def createAnode(data,layer,header,node,parent):
     #         tree[layer-1][0].add_child(tree[layer][node])
 
     datac=[]
-    for i in range(3):
+
+    for i in range(n):
         datac.append([])
-        if(i<2):
+        # print(datac.__len__())
+
+        if(i<n-1):
             datac[i] = [v for v in data if tree[layer][node].minn+(i)*tree[layer][node].sd<=v[index] < tree[layer][node].minn+(i+1)*tree[layer][node].sd ]
         else:
             datac[i] = [v for v in data if tree[layer][node].minn+(i)*tree[layer][node].sd<=v[index] <=tree[layer][node].minn+(i+1)*tree[layer][node].sd]
@@ -133,10 +141,10 @@ def createAnode(data,layer,header,node,parent):
 
     layer+=1
 
-    if(layer<5):
+    if(header):
         for i in range(pnall[index].__len__()):
             if(type(tree[layer-1][tree[layer-1].__len__()-1].choice[i]) is int):
-                createAnode(datac[i],layer,header,i,tree[layer-1][tree[layer-1].__len__()-1])
+                createAnode(n,datac[i],layer,header,i,tree[layer-1][tree[layer-1].__len__()-1])
 
             # for j in range(datac.__len__()):
             #     if(j==i):
@@ -161,23 +169,15 @@ for i in range(data[0].__len__()-1):
     header.append(i)
 print(data[0].__len__()-1)
 
-createAnode(data,0,header,0,None)
+percent=int(data.__len__()*70/100)
+random.shuffle(data)
+datatrain=data[:percent]
+datatest=data[percent:]
+print(datatrain.__len__(),datatest.__len__())
+
+createAnode(3,datatrain,0,header,0,None)
 
 print(tree)
-for i in tree:
-    for j in i:
-        print(j.attr,end=" ")
-    if i:
-        print()
-
-for i in tree:
-    for j in i:
-        if(j.choice==None):
-            print(j.attr,end=" ")
-        else:
-            print(j.choice,end=" ")
-    if i:
-        print()
 
 tree[0][0]
 str(tree[0][0])
@@ -188,6 +188,58 @@ for layer in tree:
         node.filloutput()
 
 
+for layer in range(tree.__len__()-1,-1,-1):
+    if(not tree[layer]):
+        tree.pop(layer)
+    else:
+        for i in range(tree[layer].__len__()-1,-1,-1):
+            if(tree[layer][i]==None):
+                tree[layer].pop(i)
+
 tree[0][0]
 str(tree[0][0])
 print(tree[0][0])
+
+root = tree[0][0]
+c=0
+n=0
+
+for i in datatest:
+    root=tree[0][0]
+    n+=1
+    for layer in range(tree.__len__()):
+        # print("layer",layer)
+        for j in range(root.value.__len__()):
+            if(j<root.value.__len__()-1):
+                if root.value[j]-root.sd<=i[root.attr]<root.value[j]:
+                    if(root.child[j] != None):
+                        root=root.child[j]
+                    else:
+                        # print(i[i.__len__()-1],root.choice[j])
+                        if(i[i.__len__()-1] == 0 and root.choice[j] == False):
+                            c+=1
+                        elif(i[i.__len__()-1] == 1 and root.choice[j] == True):
+                            c+=1
+                    layer=tree.__len__()
+                    break
+            else:
+                if root.value[j]-root.sd<=i[root.attr]<=root.value[j]:
+                    if(root.child[j] != None):
+                        root=root.child[j]
+                    else:
+                        # print(i[i.__len__()-1],root.choice[j])
+                        if(i[i.__len__()-1] == 0 and root.choice[j] == False):
+                            c+=1
+                        elif(i[i.__len__()-1] == 1 and root.choice[j] == True):
+                            c+=1
+                    layer=tree.__len__()
+                    break
+print(n,c)
+print(header)
+# for i in tree :
+#     for j in i:
+#         if(j.attr==18):
+#             print(j.attr,end=":")
+#             for k in range(j.child.__len__()):
+#                 if(j.child[k] != None):
+#                     print(k,j.child[k].attr,end=" ")
