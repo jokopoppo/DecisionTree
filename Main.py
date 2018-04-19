@@ -26,6 +26,7 @@ def readExel(exelname):
     # print(result_data[0].__len__())
     return result_data
 def I(n):
+    # find the information gain
     n=list(n)
     info=0
     for i in n :
@@ -41,17 +42,19 @@ def createAnode(n,data,layer,header,node,parent):
     print(header.__len__(),header)
     if not data :
         return
-    # print(data[0].__len__())
 
     minn = list(map(min, zip(*data)))
     maxx = list(map(max, zip(*data)))
 
+
     ans = []
     for i in data:
         ans.append(int(i[(i.__len__() - 1)]))
+    # find entropy
 
     infoE = I([ans.count(0),ans.count(1)])
 
+    # divided the attribute to n class
     sd=[]
     for i in range(maxx.__len__()):
         tmp= (maxx[i] - minn[i]) / n
@@ -62,7 +65,7 @@ def createAnode(n,data,layer,header,node,parent):
 
     pnall=[]
 
-
+    # find information gain of each attribute
     for i in header:
         tmp = []
         for j in range(data.__len__()):
@@ -93,15 +96,16 @@ def createAnode(n,data,layer,header,node,parent):
                 attr+= ((pn[j][0]+pn[j][1])/data.__len__())*I(pn[j])
         infoN.append(attr)
 
+
+    # find information gain of all attribute that left
     gain=[]
     for i in infoN:
         gain.append(infoE-i)
 
-    index, value = max(enumerate(gain), key=operator.itemgetter(1))
-    # print("index",index)
-    # print("HEAD",header[index])
-    # print(pnall[index])
 
+    index, value = max(enumerate(gain), key=operator.itemgetter(1))
+
+    #  the winner will be a node this round
     tree.append([])
     tree[layer].append(Node(header.pop(index),minn[index],sd[index],pnall[index]))
 
@@ -109,7 +113,7 @@ def createAnode(n,data,layer,header,node,parent):
         parent.add_child(tree[layer][tree[layer].__len__()-1])
 
     datac=[]
-
+    # copy the others data for find next node
     for i in range(n):
         datac.append([])
 
@@ -129,6 +133,7 @@ def createAnode(n,data,layer,header,node,parent):
 
     layer+=1
 
+    # if still has attributes go find next node
     if(header):
         for i in range(pnall[index].__len__()):
             if(type(tree[layer-1][tree[layer-1].__len__()-1].choice[i]) is int):
@@ -136,11 +141,13 @@ def createAnode(n,data,layer,header,node,parent):
 
     return index
 
+# read data from excel
 data = readExel('data.xls')
 
+# divided data in to 10 box
 percent=int(data.__len__()*10/100)
 random.shuffle(data)
-
+# shuffle data
 dat=[]
 
 for i in range(10):
@@ -148,12 +155,16 @@ for i in range(10):
 
 forest=[]
 acc=[]
+# loop for train each box of data
 for box in range(dat.__len__()):
     tree = []
     header=[]
+
+    # index of Attribute in data
     for i in range(data[0].__len__()-1):
         header.append(i)
-    # print(data[0].__len__()-1)
+
+    # set data train from 9 boxs and data test from 1 box
 
     datatrain=[]
     datatest=dat[box]
@@ -161,13 +172,14 @@ for box in range(dat.__len__()):
     for i in range(dat.__len__()):
         if(i!=box):
             datatrain+=dat[i]
-
+    # shuffle data in data train
     random.shuffle(datatrain)
 
+    # recursive to create a tree node by node
     createAnode(2,datatrain,0,header,0,None)
 
-    # print(tree)
 
+    # fill the output of leaf node in tree
     for layer in tree:
         for node in layer:
             node.filloutput()
@@ -189,7 +201,10 @@ for box in range(dat.__len__()):
     c=0
     n=0
 
+    # start to test the tree by data test
+    # let the tuple run pass the path in tree
     for i in datatest:
+
         root=tree[0][0]
         n+=1
         for layer in range(tree.__len__()):
@@ -222,10 +237,14 @@ for box in range(dat.__len__()):
     print(n,c)
     print(header)
     acc.append(c)
+
+    # keep a tree in forest to find the best tree
     forest.append(tree)
+
+# find mean of accuracy of all 10 tree
 print(acc)
 accurancy=((sum(acc)/acc.__len__())/datatest.__len__())*100
 index, value = max(enumerate(acc), key=operator.itemgetter(1))
 print("Tree",index,", Acc :",(value/datatest.__len__())*100,"%")
-print("Accurancy = ",accurancy)
+print("Accuracy = ",accurancy,"%")
 print(forest[index][0][0])
